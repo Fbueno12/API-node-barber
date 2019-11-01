@@ -1,44 +1,46 @@
 import nodemailer from 'nodemailer';
-import { resolve } from 'path';
-import mail_config from '../config/mail';
+import mailConfig from '../config/mail';
 import exphbs from 'express-handlebars';
-import nodemailerhbs from 'nodemailer-express-handlebars'
-
+import nodemailerhbs from 'nodemailer-express-handlebars';
+import { resolve } from 'path';
 class Mail {
-    constructor(){
-        const {host,port,secure,auth} = mail_config;
+  constructor(){
 
-        this.transporter = nodemailer.createTransport({
-            host,
-            port,
-            secure,
-            auth: auth.user ? auth : null
-        });
+    const { host, port, secure, auth } = mailConfig;
 
-        this.configuredTemplates();
-    }
+    this.transporter = nodemailer.createTransport({
+        host,
+        port,
+        secure,
+        auth: auth.user ? auth : null,
+      });
 
-    configuredTemplates(){
-        const viewPath = resolve(__dirname, '..', 'app', 'views', 'emails');
+      this.configureTemplates();
+  }
 
-        this.transporter.use('compile', nodemailerhbs({
-            viewEngine: exphbs.create({
-                layoutsDir: resolve(viewPath, 'layouts'),
-                partialsDir: resolve(viewPath, 'partials'),
-                defaultLayout: 'default',
-                extname: '.hbs'
-            }),
-            viewPath,
-            extName: '.hbs'
-        }));
-    }
+  configureTemplates(){
+    const viewPath = resolve(__dirname, '..', 'app', 'views', 'emails');
 
-    sendMail(message){
-        return this.transporter.sendMail({
-            ... mail_config.default,
-            ... message,
-        });
-    }
+    this.transporter.use(
+      'compile',
+      nodemailerhbs({
+        viewEngine: exphbs.create({
+          layoutsDir: resolve(viewPath, 'layouts'),
+          partialsDir: resolve(viewPath, 'partials'),
+          defaultLayout: 'default',
+          extname: '.hbs',
+        }),
+        viewPath,
+        extName: '.hbs',
+      })
+    );
+  }
+  sendMail(message){
+    return this.transporter.sendMail({
+      ...mailConfig.default,
+      ...message,
+    });
+  }
 }
 
 export default new Mail();
